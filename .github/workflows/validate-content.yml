@@ -29,8 +29,11 @@ jobs:
           npm init -y
           npm install --no-audit --no-fund typescript ts-node zod ajv ajv-formats glob
 
-      - name: Validate JSON batches
-        run: npx ts-node scripts/validate-batch.ts "data/batches/**/*.json"
+      - name: Validate JSON batches (ESM + ts-node)
+        run: |
+          # minimal tsconfig so ts-node knows to use ESM
+          printf '{ "compilerOptions": { "module": "esnext", "moduleResolution": "bundler", "target": "ES2020" } }\n' > tsconfig.json
+          node --loader ts-node/esm scripts/validate-batch.ts "data/batches/**/*.json"
 
       # Optional: if this still 403s for you, just delete this whole step.
       - name: Comment summary on PR
