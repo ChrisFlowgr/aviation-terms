@@ -1,6 +1,6 @@
 name: Ingest Batch (Paste JSON → PR)
 
-on:
+on: 
   workflow_dispatch:
     inputs:
       batch_id:
