@@ -40,7 +40,7 @@ jobs:
           npm install @octokit/rest
 
       # This step writes the JS file at runtime. You do NOT keep it in the repo.
-      - name: Write ingest script
+           - name: Write ingest script
         run: |
           mkdir -p scripts
           cat > scripts/ingest-batch.mjs <<'JS'
@@ -66,7 +66,7 @@ jobs:
 
           const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
 
-          // 1) Base SHA
+          // 1) Base SHA (for branch creation)
           const { data: ref } = await octokit.git.getRef({ owner, repo, ref: `heads/${base}` });
           const baseSha = ref.object.sha;
 
@@ -79,14 +79,14 @@ jobs:
             else throw e;
           }
 
-          // 3) Put batch file (create or update) — include sha if file exists
-          let batchSha = undefined;
+          // 3) Create/update batch file (include sha if exists)
+          let batchSha;
           try {
             const r = await octokit.repos.getContent({ owner, repo, path: batchPath, ref: branch });
             batchSha = r.data.sha;
             console.log(`Found existing ${batchPath} with sha ${batchSha}`);
           } catch (e) {
-            if (e.status !== 404) throw e; // 404 => create new
+            if (e.status !== 404) throw e; // only ignore Not Found
           }
 
           await octokit.repos.createOrUpdateFileContents({
@@ -98,10 +98,21 @@ jobs:
           });
           console.log(`Wrote ${batchPath}`);
 
-          // 4) Read manifest from base (latest) to get sha + JSON
-          const manRes = await octokit.repos.getContent({ owner, repo, path: manifestPath, ref: base });
-          const manifestSha = manRes.data.sha;
-          const manifestJSON = JSON.parse(Buffer.from(manRes.data.content, "base64").toString("utf8"));
+          // 4) Read manifest from BRANCH first; if 404, read from BASE
+          let manifestSha;
+          let manifestJSON;
+          try {
+            const r = await octokit.repos.getContent({ owner, repo, path: manifestPath, ref: branch });
+            manifestSha = r.data.sha;
+            manifestJSON = JSON.parse(Buffer.from(r.data.content, "base64").toString("utf8"));
+            console.log(`Using manifest from branch ${branch} (sha ${manifestSha})`);
+          } catch (e) {
+            if (e.status !== 404) throw e;
+            const r2 = await octokit.repos.getContent({ owner, repo, path: manifestPath, ref: base });
+            manifestSha = r2.data.sha;
+            manifestJSON = JSON.parse(Buffer.from(r2.data.content, "base64").toString("utf8"));
+            console.log(`Using manifest from base ${base} (sha ${manifestSha})`);
+          }
 
           // 5) Compute termCount + categories from pasted JSON
           let termCount = 0;
@@ -125,7 +136,7 @@ jobs:
             });
           }
 
-          // 7) Update manifest on the branch (must include sha)
+          // 7) Update manifest ON THE BRANCH (must include the sha we just fetched)
           await octokit.repos.createOrUpdateFileContents({
             owner, repo, path: manifestPath,
             message: `chore(content): register ${batchId} in manifest`,
@@ -141,7 +152,7 @@ jobs:
             console.log(`Opened PR from ${branch} → ${base}`);
           } catch (e) {
             if (e.status === 403) {
-              console.log("NOTE: Repo blocks GITHUB_TOKEN from creating PRs. Open the PR manually or use a PAT secret (GH_PAT).");
+              console.log("NOTE: Repo blocks GITHUB_TOKEN from creating PRs. Open PR manually or use a PAT secret (GH_PAT).");
             } else if (e.status === 422) {
               console.log("PR already exists; continuing.");
             } else {
