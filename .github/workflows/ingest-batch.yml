@@ -1,7 +1,7 @@
 name: Ingest Batch (Paste JSON → PR)
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: 
     inputs:
       batch_id:
         description: "Batch ID (e.g. 2025-10-30-batch-002)"
