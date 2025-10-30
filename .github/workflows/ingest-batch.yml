@@ -1,107 +1,165 @@
-// scripts/ingest-batch.mjs
-import { Octokit } from "@octokit/rest";
+name: Ingest Batch (Paste JSON → PR)
 
-const {
-  GITHUB_TOKEN,
-  GITHUB_REPOSITORY,
-  INPUT_BATCH_ID,
-  INPUT_BASE_BRANCH,
-  INPUT_JSON
-} = process.env;
+on:
+  workflow_dispatch:
+    inputs:
+      batch_id:
+        description: "Batch ID (e.g. 2025-10-30-batch-002)"
+        required: true
+        type: string
+      base_branch:
+        description: "Base branch"
+        required: true
+        default: "main"
+        type: string
+      json:
+        description: "Paste the entire batch JSON here"
+        required: true
+        type: string
 
-if (!GITHUB_TOKEN) throw new Error("Missing GITHUB_TOKEN");
-const octokit = new Octokit({ auth: GITHUB_TOKEN });
+permissions:
+  contents: write
+  pull-requests: write
 
-const [owner, repo] = GITHUB_REPOSITORY.split("/");
-const batchId = INPUT_BATCH_ID.trim();
-const base = (INPUT_BASE_BRANCH || "main").trim();
-const branch = `content/${batchId}`;
-const batchPath = `data/batches/${batchId}.json`;
-const manifestPath = "data/manifest.json";
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
 
-const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-// 1) Base SHA
-const { data: ref } = await octokit.git.getRef({ owner, repo, ref: `heads/${base}` });
-const baseSha = ref.object.sha;
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-// 2) Ensure branch exists
-try {
-  await octokit.git.createRef({ owner, repo, ref: `refs/heads/${branch}`, sha: baseSha });
-  console.log(`Created branch ${branch}`);
-} catch (e) {
-  if (e.status === 422) console.log(`Branch ${branch} already exists; continuing.`);
-  else throw e;
-}
+      - name: Install deps
+        run: |
+          npm init -y
+          npm install @octokit/rest
 
-// 3) Put batch file (create or update)
-//    If file exists on the branch, include its sha.
-let batchSha = undefined;
-try {
-  const r = await octokit.repos.getContent({ owner, repo, path: batchPath, ref: branch });
-  batchSha = r.data.sha;
-  console.log(`Found existing ${batchPath} with sha ${batchSha}`);
-} catch (e) {
-  if (e.status !== 404) throw e; // 404 means "doesn't exist" → create new
-}
+      # This step writes the JS file at runtime. You do NOT keep it in the repo.
+      - name: Write ingest script
+        run: |
+          mkdir -p scripts
+          cat > scripts/ingest-batch.mjs <<'JS'
+          import { Octokit } from "@octokit/rest";
 
-await octokit.repos.createOrUpdateFileContents({
-  owner, repo, path: batchPath,
-  message: `chore(content): add ${batchId}`,
-  content: b64(INPUT_JSON),
-  branch,
-  ...(batchSha ? { sha: batchSha } : {})
-});
-console.log(`Wrote ${batchPath}`);
+          const {
+            GITHUB_TOKEN,
+            GITHUB_REPOSITORY,
+            INPUT_BATCH_ID,
+            INPUT_BASE_BRANCH,
+            INPUT_JSON
+          } = process.env;
 
-// 4) Read manifest from base (latest) to get sha + JSON
-const manRes = await octokit.repos.getContent({ owner, repo, path: manifestPath, ref: base });
-const manifestSha = manRes.data.sha;
-const manifestJSON = JSON.parse(Buffer.from(manRes.data.content, "base64").toString("utf8"));
+          if (!GITHUB_TOKEN) throw new Error("Missing GITHUB_TOKEN");
+          const octokit = new Octokit({ auth: GITHUB_TOKEN });
 
-// 5) Compute termCount and categories from pasted JSON
-let termCount = 0;
-let categories = [];
-try {
-  const parsed = JSON.parse(INPUT_JSON);
-  const terms = Array.isArray(parsed.terms) ? parsed.terms : [];
-  termCount = terms.length;
-  categories = [...new Set(terms.map(t => t.category).filter(Boolean))];
-} catch {}
+          const [owner, repo] = GITHUB_REPOSITORY.split("/");
+          const batchId = INPUT_BATCH_ID.trim();
+          const base = (INPUT_BASE_BRANCH || "main").trim();
+          const branch = `content/${batchId}`;
+          const batchPath = `data/batches/${batchId}.json`;
+          const manifestPath = "data/manifest.json";
 
-// 6) Append batch entry if not present
-manifestJSON.batches = manifestJSON.batches || [];
-if (!manifestJSON.batches.some(b => b.id === batchId)) {
-  manifestJSON.batches.push({
-    id: batchId,
-    path: batchPath,
-    createdAt: new Date().toISOString(),
-    termCount,
-    categories: categories.length ? categories : ["Performance"]
-  });
-}
+          const b64 = (s) => Buffer.from(s, "utf8").toString("base64");
 
-// 7) Update manifest on the branch (must include sha)
-await octokit.repos.createOrUpdateFileContents({
-  owner, repo, path: manifestPath,
-  message: `chore(content): register ${batchId} in manifest`,
-  content: b64(JSON.stringify(manifestJSON, null, 2)),
-  branch,
-  sha: manifestSha
-});
-console.log(`Updated manifest on ${branch}`);
+          // 1) Base SHA
+          const { data: ref } = await octokit.git.getRef({ owner, repo, ref: `heads/${base}` });
+          const baseSha = ref.object.sha;
 
-// 8) Open PR (skip if policy blocks)
-try {
-  await octokit.pulls.create({ owner, repo, title: `Add ${batchId}`, head: branch, base });
-  console.log(`Opened PR from ${branch} → ${base}`);
-} catch (e) {
-  if (e.status === 403) {
-    console.log("NOTE: Repo blocks GITHUB_TOKEN from creating PRs. Open the PR manually or use a PAT (see instructions).");
-  } else if (e.status === 422) {
-    console.log("PR already exists; continuing.");
-  } else {
-    throw e;
-  }
-}
+          // 2) Ensure branch exists
+          try {
+            await octokit.git.createRef({ owner, repo, ref: `refs/heads/${branch}`, sha: baseSha });
+            console.log(`Created branch ${branch}`);
+          } catch (e) {
+            if (e.status === 422) console.log(`Branch ${branch} already exists; continuing.`);
+            else throw e;
+          }
+
+          // 3) Put batch file (create or update) — include sha if file exists
+          let batchSha = undefined;
+          try {
+            const r = await octokit.repos.getContent({ owner, repo, path: batchPath, ref: branch });
+            batchSha = r.data.sha;
+            console.log(`Found existing ${batchPath} with sha ${batchSha}`);
+          } catch (e) {
+            if (e.status !== 404) throw e; // 404 => create new
+          }
+
+          await octokit.repos.createOrUpdateFileContents({
+            owner, repo, path: batchPath,
+            message: `chore(content): add ${batchId}`,
+            content: b64(INPUT_JSON),
+            branch,
+            ...(batchSha ? { sha: batchSha } : {})
+          });
+          console.log(`Wrote ${batchPath}`);
+
+          // 4) Read manifest from base (latest) to get sha + JSON
+          const manRes = await octokit.repos.getContent({ owner, repo, path: manifestPath, ref: base });
+          const manifestSha = manRes.data.sha;
+          const manifestJSON = JSON.parse(Buffer.from(manRes.data.content, "base64").toString("utf8"));
+
+          // 5) Compute termCount + categories from pasted JSON
+          let termCount = 0;
+          let categories = [];
+          try {
+            const parsed = JSON.parse(INPUT_JSON);
+            const terms = Array.isArray(parsed.terms) ? parsed.terms : [];
+            termCount = terms.length;
+            categories = [...new Set(terms.map(t => t.category).filter(Boolean))];
+          } catch {}
+
+          // 6) Append entry if missing
+          manifestJSON.batches = manifestJSON.batches || [];
+          if (!manifestJSON.batches.some(b => b.id === batchId)) {
+            manifestJSON.batches.push({
+              id: batchId,
+              path: batchPath,
+              createdAt: new Date().toISOString(),
+              termCount,
+              categories: categories.length ? categories : ["Performance"]
+            });
+          }
+
+          // 7) Update manifest on the branch (must include sha)
+          await octokit.repos.createOrUpdateFileContents({
+            owner, repo, path: manifestPath,
+            message: `chore(content): register ${batchId} in manifest`,
+            content: b64(JSON.stringify(manifestJSON, null, 2)),
+            branch,
+            sha: manifestSha
+          });
+          console.log(`Updated manifest on ${branch}`);
+
+          // 8) Try to open PR (skip gracefully if blocked by policy)
+          try {
+            await octokit.pulls.create({ owner, repo, title: `Add ${batchId}`, head: branch, base });
+            console.log(`Opened PR from ${branch} → ${base}`);
+          } catch (e) {
+            if (e.status === 403) {
+              console.log("NOTE: Repo blocks GITHUB_TOKEN from creating PRs. Open the PR manually or use a PAT secret (GH_PAT).");
+            } else if (e.status === 422) {
+              console.log("PR already exists; continuing.");
+            } else {
+              throw e;
+            }
+          }
+          JS
+
+      # If you add a PAT named GH_PAT, switch to it here:
+      - name: Run ingest
+        env:
+          # Use repo secret GH_PAT to allow PR creation automatically (recommended)
+          # GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          # Or keep default token; PR creation may be blocked by policy and will be skipped gracefully
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          INPUT_BATCH_ID: ${{ inputs.batch_id }}
+          INPUT_BASE_BRANCH: ${{ inputs.base_branch }}
+          INPUT_JSON: ${{ inputs.json }}
+        run: node scripts/ingest-batch.mjs
+
 
