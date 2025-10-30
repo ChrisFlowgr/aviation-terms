@@ -1,0 +1,9 @@
+name: Manual Check
+on:
+  workflow_dispatch: {}   # lets you run it from the Actions tab
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Say hello
+        run: echo "GitHub Actions is working ✅"
