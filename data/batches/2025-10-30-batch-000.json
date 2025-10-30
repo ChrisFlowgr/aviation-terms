@@ -1,0 +1,52 @@
+{
+  "terms": [
+    {
+      "id": "flight-level",
+      "title": "Flight Level",
+      "category": "Navigation",
+      "sections": {
+        "whatItIs": {
+          "content": "A standard nominal altitude of an aircraft, in hundreds of feet, based on a standardized air pressure at sea level (29.92 inches Hg/1013.2 hPa)."
+        },
+        "howItWorks": {
+          "content": "Flight levels are used to ensure safe vertical separation between aircraft, especially at high altitudes. Each flight level represents a pressure altitude in hundreds of feet, prefixed with 'FL' (e.g., FL350 = 35,000 feet)."
+        },
+        "whatYouShouldDo": {
+          "content": "Set altimeter to standard pressure (29.92/1013.2) when climbing through transition altitude. Monitor assigned flight level and maintain it within ±100 feet. Request new flight level if unable to maintain due to weather or performance."
+        },
+        "troubleshooting": {
+          "content": "If unable to maintain flight level, check pressurization system and oxygen masks. Consider requesting lower flight level if performance degrades. Cross-check altimeters if altitude deviations occur."
+        }
+      },
+      "synonyms": ["FL", "Altitude Level", "Pressure Altitude", "Flight Level Assignment"],
+      "tags": ["altitude", "navigation", "safety", "pressurization", "separation"],
+      "relationships": [],
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z"
+    },
+    {
+      "id": "metar",
+      "title": "METAR",
+      "category": "Weather",
+      "sections": {
+        "whatItIs": {
+          "content": "A standardized format for reporting weather information used in aviation, typically issued at hourly intervals, providing current surface conditions at an airport."
+        },
+        "howItWorks": {
+          "content": "METARs provide pilots and dispatchers with essential weather information for flight planning and operations. They include wind, visibility, precipitation, cloud cover, temperature, dew point, and barometric pressure in a coded format."
+        },
+        "whatYouShouldDo": {
+          "content": "Check METARs during flight planning and before departure. Monitor destination and alternate airport METARs during flight. Pay special attention to wind, visibility, ceiling, and pressure settings. Request updated weather if METAR is more than 1 hour old."
+        },
+        "troubleshooting": {
+          "content": "If METAR is not available, check TAF reports or contact ATC for current conditions. Consider using ATIS broadcasts or pilot reports. For outdated METARs, increase fuel reserves and verify alternate airport conditions."
+        }
+      },
+      "synonyms": ["Aviation Routine Weather Report", "Weather Observation", "Surface Observation"],
+      "tags": ["weather", "planning", "safety", "airport", "meteorology"],
+      "relationships": [],
+      "createdAt": "2024-01-01T00:00:00Z",
+      "updatedAt": "2024-01-01T00:00:00Z"
+    }
+  ]
+}

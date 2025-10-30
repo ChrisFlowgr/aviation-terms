@@ -1,0 +1,197 @@
+{
+  "$schema": "../schemas/batch.schema.json#/definitions/GlossaryCategory",
+  "description": "Taxonomy of valid glossary categories for Flight Manager",
+  "version": "1.0",
+  "lastUpdated": "2025-10-30T00:00:00Z",
+  "categories": [
+    {
+      "name": "Navigation",
+      "description": "Navigation systems, procedures, and concepts",
+      "examples": ["Flight Level", "ILS", "VOR", "GPS", "RNAV"],
+      "parentCategory": null,
+      "relatedCategories": ["Navigation Systems", "Flight Instruments"]
+    },
+    {
+      "name": "Weather",
+      "description": "Meteorological information and weather systems",
+      "examples": ["METAR", "TAF", "Wind Shear", "Icing Conditions"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety", "Performance"]
+    },
+    {
+      "name": "Communication",
+      "description": "Communication systems and procedures",
+      "examples": ["VHF Radio", "HF Radio", "ACARS", "SATCOM"],
+      "parentCategory": null,
+      "relatedCategories": ["Communication Systems", "Equipment"]
+    },
+    {
+      "name": "Safety",
+      "description": "Safety systems, procedures, and equipment",
+      "examples": ["TCAS", "GPWS", "Fire Protection", "Emergency Equipment"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety Equipment", "Fire Protection Systems"]
+    },
+    {
+      "name": "Performance",
+      "description": "Aircraft performance characteristics and calculations",
+      "examples": ["V-speeds", "Takeoff Performance", "Landing Distance"],
+      "parentCategory": null,
+      "relatedCategories": ["Procedures", "Flight Controls"]
+    },
+    {
+      "name": "Flight Controls",
+      "description": "Primary and secondary flight control surfaces",
+      "examples": ["Ailerons", "Elevators", "Rudder", "Flaps", "Spoilers"],
+      "parentCategory": null,
+      "relatedCategories": ["System Controls", "Hydraulic Systems"]
+    },
+    {
+      "name": "Navigation Systems",
+      "description": "Installed navigation equipment and systems",
+      "examples": ["GPS/IRS", "FMS", "Radio Navigation"],
+      "parentCategory": null,
+      "relatedCategories": ["Navigation", "Flight Instruments"]
+    },
+    {
+      "name": "Equipment",
+      "description": "General aircraft equipment and systems",
+      "examples": ["Avionics", "Instruments", "Installed Equipment"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety Equipment", "Communication Systems"]
+    },
+    {
+      "name": "Procedures",
+      "description": "Standard operating procedures and checklists",
+      "examples": ["Normal Procedures", "Emergency Procedures", "Checklists"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety", "Performance"]
+    },
+    {
+      "name": "Electrical Systems",
+      "description": "Aircraft electrical power generation and distribution",
+      "examples": ["Generators", "Batteries", "Bus Systems", "Power Distribution"],
+      "parentCategory": null,
+      "relatedCategories": ["Electrical", "System Controls"]
+    },
+    {
+      "name": "Electrical",
+      "description": "Electrical components and circuits",
+      "examples": ["Circuit Breakers", "Switches", "Electrical Controls"],
+      "parentCategory": "Electrical Systems",
+      "relatedCategories": ["Electrical Systems"]
+    },
+    {
+      "name": "Pneumatic Systems",
+      "description": "Pneumatic and bleed air systems",
+      "examples": ["Bleed Air", "Engine Bleed", "APU Bleed", "Packs"],
+      "parentCategory": null,
+      "relatedCategories": ["Environmental Systems", "Engine Systems"]
+    },
+    {
+      "name": "Environmental Systems",
+      "description": "Cabin pressurization and air conditioning",
+      "examples": ["Pressurization", "Air Conditioning", "Pack Systems", "Outflow Valves"],
+      "parentCategory": null,
+      "relatedCategories": ["Pneumatic Systems", "Cabin Systems"]
+    },
+    {
+      "name": "Ice Protection Systems",
+      "description": "Anti-ice and de-ice systems",
+      "examples": ["Wing Anti-Ice", "Engine Anti-Ice", "Pitot Heat", "De-Ice Boots"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety", "Engine Systems"]
+    },
+    {
+      "name": "Cargo Systems",
+      "description": "Cargo loading and handling systems",
+      "examples": ["Cargo Doors", "Loading Systems", "Cargo Nets", "Restraint Systems"],
+      "parentCategory": null,
+      "relatedCategories": ["Equipment"]
+    },
+    {
+      "name": "Hydraulic Systems",
+      "description": "Hydraulic power and actuation systems",
+      "examples": ["Hydraulic Pumps", "Hydraulic Fluid", "Actuators", "Reservoirs"],
+      "parentCategory": null,
+      "relatedCategories": ["Flight Controls", "Landing Gear"]
+    },
+    {
+      "name": "Communication Systems",
+      "description": "Communication equipment and radios",
+      "examples": ["VHF", "HF", "SATCOM", "Interphone"],
+      "parentCategory": null,
+      "relatedCategories": ["Communication", "Equipment"]
+    },
+    {
+      "name": "Lighting Systems",
+      "description": "Interior and exterior aircraft lighting",
+      "examples": ["Navigation Lights", "Landing Lights", "Taxi Lights", "Cabin Lights"],
+      "parentCategory": null,
+      "relatedCategories": ["Electrical Systems", "Safety"]
+    },
+    {
+      "name": "Cabin Systems",
+      "description": "Passenger cabin equipment and systems",
+      "examples": ["Cabin Pressure", "Cabin Temperature", "Oxygen Masks", "Lavatories"],
+      "parentCategory": null,
+      "relatedCategories": ["Environmental Systems", "Safety Equipment"]
+    },
+    {
+      "name": "Fire Protection Systems",
+      "description": "Fire detection and extinguishing systems",
+      "examples": ["Fire Detectors", "Fire Extinguishers", "Engine Fire Protection"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety", "Engine Systems"]
+    },
+    {
+      "name": "Flight Instruments",
+      "description": "Cockpit flight instruments and displays",
+      "examples": ["PFD", "ND", "EICAS", "Standby Instruments"],
+      "parentCategory": null,
+      "relatedCategories": ["Navigation Systems", "Equipment"]
+    },
+    {
+      "name": "Engine Systems",
+      "description": "Engine components and systems",
+      "examples": ["Thrust Levers", "Engine Controls", "Engine Indicators", "Fuel Systems"],
+      "parentCategory": null,
+      "relatedCategories": ["Performance", "System Controls"]
+    },
+    {
+      "name": "System Controls",
+      "description": "System control panels and switches",
+      "examples": ["Overhead Panel", "Mode Control Panel", "System Selectors"],
+      "parentCategory": null,
+      "relatedCategories": ["Electrical Systems", "Flight Controls"]
+    },
+    {
+      "name": "Safety Equipment",
+      "description": "Emergency and safety equipment",
+      "examples": ["Life Vests", "Escape Slides", "ELT", "Oxygen Systems"],
+      "parentCategory": null,
+      "relatedCategories": ["Safety", "Cabin Systems"]
+    },
+    {
+      "name": "Communications",
+      "description": "Communication procedures and protocols",
+      "examples": ["ATC Communication", "Radio Procedures", "Phraseology"],
+      "parentCategory": null,
+      "relatedCategories": ["Communication", "Procedures"]
+    },
+    {
+      "name": "Landing Gear",
+      "description": "Landing gear systems and components",
+      "examples": ["Gear Doors", "Brakes", "Tires", "Steering", "Retraction System"],
+      "parentCategory": null,
+      "relatedCategories": ["Hydraulic Systems", "System Controls"]
+    }
+  ],
+  "notes": [
+    "Categories are case-sensitive and must match exactly",
+    "Some categories overlap intentionally (e.g., 'Communication' vs 'Communication Systems')",
+    "Each category should have at least 4 terms for quiz generation",
+    "Categories can have parent-child relationships (e.g., 'Electrical' is a child of 'Electrical Systems')",
+    "Related categories help with cross-referencing and discovery"
+  ]
+}
