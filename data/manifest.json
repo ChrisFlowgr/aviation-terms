@@ -17,6 +17,15 @@
       "categories": [
         "Performance"
       ]
+    },
+    {
+      "id": "2025-10-30-batch-003",
+      "path": "data/batches/2025-10-30-batch-003.json",
+      "createdAt": "2025-10-30T14:17:11.435Z",
+      "termCount": 0,
+      "categories": [
+        "Performance"
+      ]
     }
   ]
 }
