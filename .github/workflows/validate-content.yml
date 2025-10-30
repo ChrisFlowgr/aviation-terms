@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'data/batches/**/*.json'
-  workflow_dispatch: {}   # allow manual run from Actions tab
+  workflow_dispatch: {}
 
 permissions:
   contents: read
@@ -22,31 +22,34 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'   # no caching so we don't need a lock file
+          node-version: '20'
+          # no caching; we install tiny runtime deps each run
 
       - name: Install runtime deps
         run: |
           npm init -y
           npm install --no-audit --no-fund typescript ts-node zod ajv ajv-formats glob
 
-      - name: Validate JSON batches (ESM + ts-node)
+      # Force ts-node to transpile as CommonJS (avoids ESM loader issues)
+      - name: Create minimal tsconfig
         run: |
-          # minimal tsconfig so ts-node knows to use ESM
-          printf '{ "compilerOptions": { "module": "esnext", "moduleResolution": "bundler", "target": "ES2020" } }\n' > tsconfig.json
-          node --loader ts-node/esm scripts/validate-batch.ts "data/batches/**/*.json"
+          cat > tsconfig.json << 'JSON'
+          {
+            "compilerOptions": {
+              "target": "ES2020",
+              "module": "commonjs",
+              "moduleResolution": "node",
+              "esModuleInterop": true,
+              "resolveJsonModule": true,
+              "skipLibCheck": true
+            }
+          }
+          JSON
 
-      # Optional: if this still 403s for you, just delete this whole step.
-      - name: Comment summary on PR
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = "✅ Validation ran. See logs above for pass/warn/error details.";
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body
-            });
+      - name: Validate JSON batches
+        run: npx ts-node --transpile-only --compiler-options '{"module":"commonjs","moduleResolution":"node","esModuleInterop":true,"target":"ES2020","resolveJsonModule":true,"skipLibCheck":true}' scripts/validate-batch.ts "data/batches/**/*.json"
+
+      # If this step 403s for you, delete it; it's optional.
+      - name:
 
 
