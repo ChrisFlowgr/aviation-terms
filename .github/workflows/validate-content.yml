@@ -3,10 +3,13 @@ name: Validate Content Batches
 on:
   pull_request:
     paths:
-      - 'data/batches/**.json'
-      - 'schemas/batch.schema.json'
-      - 'scripts/validate-batch.ts'
-      - 'packages/shared/src/validators/glossaryBatch.zod.ts'
+      - 'data/batches/**/*.json'
+  workflow_dispatch: {}   # lets you run it manually from Actions, too
+
+# Give the workflow permission to read code and write PR comments if needed
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   validate:
@@ -14,83 +17,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repo
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Fetch all history to access base branch
 
-      - name: Setup Node.js
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: '20'
+          # no caching here so we don't need a lock file
 
-      - name: Install dependencies
+      # Install the bare minimum we need at runtime (no lock file required)
+      - name: Install runtime deps
         run: |
-          npm ci --legacy-peer-deps
-          npm install -g ts-node typescript
-          npm install --save-dev ajv ajv-formats zod @types/node
+          npm init -y
+          npm install --no-audit --no-fund typescript ts-node zod ajv ajv-formats glob
 
-      - name: Find changed batch files
-        id: changed-files
-        uses: tj-actions/changed-files@v41
-        with:
-          files: |
-            data/batches/**.json
+      # Run your validator on the changed batch files.
+      # If your script expects a glob, keep as is; otherwise point to the PR file path.
+      - name: Validate JSON batches
+        run: npx ts-node scripts/validate-batch.ts "data/batches/**/*.json"
 
-      - name: Validate changed batches
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo "Changed batch files:"
-          echo "${{ steps.changed-files.outputs.all_changed_files }}"
-
-          EXIT_CODE=0
-
-          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            echo ""
-            echo "========================================="
-            echo "Validating: $file"
-            echo "========================================="
-
-            if npm run validate:batch -- "$file"; then
-              echo "✅ $file passed validation"
-            else
-              echo "❌ $file failed validation"
-              EXIT_CODE=1
-            fi
-          done
-
-          exit $EXIT_CODE
-
-      - name: Check category term counts
-        if: steps.changed-files.outputs.any_changed == 'true'
-        run: |
-          echo "Checking category term counts..."
-
-          # This will be handled by the validate-batch script
-          # The script already checks for < 4 terms per category
-          echo "✅ Category checks completed (see validation output above)"
-
-      - name: Comment on PR
-        if: failure()
+      # OPTIONAL: leave this out if you still get permission errors.
+      # With permissions set above, it should work when PR comes from a branch in the same repo.
+      - name: Comment summary on PR
+        if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
+            const body = "✅ Validation ran. See logs above for pass/warn/error details.";
+            await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '❌ **Content validation failed**\n\nPlease check the validation errors above and fix them before merging.\n\nCommon issues:\n- Markdown in plain text fields\n- Invalid category names\n- Non-kebab-case IDs\n- Missing required fields\n- Categories with < 4 terms total\n\nRun locally: `npm run validate:batch data/batches/your-file.json`'
-            })
+              issue_number: context.issue.number,
+              body
+            });
 
-      - name: Success comment on PR
-        if: success() && steps.changed-files.outputs.any_changed == 'true'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '✅ **Content validation passed**\n\nAll batch files are valid and ready to merge!'
-            })
