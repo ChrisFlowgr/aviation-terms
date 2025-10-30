@@ -5,7 +5,18 @@
       "path": "data/batches/2025-10-30-batch-001.json",
       "createdAt": "2025-10-30T00:00:00Z",
       "termCount": 1,
-      "categories": ["Performance"]
+      "categories": [
+        "Performance"
+      ]
+    },
+    {
+      "id": "2025-10-30-batch-002",
+      "path": "data/batches/2025-10-30-batch-002.json",
+      "createdAt": "2025-10-30T11:48:33.435Z",
+      "termCount": 0,
+      "categories": [
+        "Performance"
+      ]
     }
   ]
 }
