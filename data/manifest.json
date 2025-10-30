@@ -1,1 +1,11 @@
-{ "batches": [] }
+{
+  "batches": [
+    {
+      "id": "2025-10-30-batch-001",
+      "path": "data/batches/2025-10-30-batch-001.json",
+      "createdAt": "2025-10-30T00:00:00Z",
+      "termCount": 1,
+      "categories": ["Performance"]
+    }
+  ]
+}

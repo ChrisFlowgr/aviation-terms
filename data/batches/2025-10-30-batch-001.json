@@ -1,0 +1,20 @@
+{
+  "terms": [
+    {
+      "id": "v1-takeoff-decision-speed",
+      "title": "V1 — Takeoff Decision Speed",
+      "category": "Performance",
+      "sections": {
+        "whatItIs": { "content": "The takeoff decision speed. At or below V1 a rejected takeoff may be initiated; at or above V1 the takeoff is continued. V1 is computed using certified performance methods considering runway length, aircraft weight, and environmental conditions." },
+        "howItWorks": { "content": "V1 is derived from approved performance data to satisfy accelerate-stop and accelerate-go requirements. Operators use AFM or performance tools so stopping or continuing from a critical point remains within limits." },
+        "whatYouShouldDo": { "content": "Before departure, confirm V1 against current weight, runway, and conditions. Brief reject criteria below V1 and continue above V1 unless a catastrophic failure occurs. Monitor callouts and cross-check instruments." },
+        "troubleshooting": { "content": "If V1 looks inconsistent, recheck weight, pressure altitude, temperature, runway state, contamination, MEL/CDL penalties, and any derate or assumed temperature." }
+      },
+      "synonyms": ["Decision Speed", "Takeoff Decision", "V One"],
+      "tags": ["performance", "takeoff", "v-speeds", "runway", "safety"],
+      "relationships": [],
+      "createdAt": "2025-10-30T00:00:00Z",
+      "updatedAt": "2025-10-30T00:00:00Z"
+    }
+  ]
+}
