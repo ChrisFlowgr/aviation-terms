@@ -1,7 +1,7 @@
 name: Ingest Batch (Paste JSON → PR)
 
 on:
-  workflow_dispatch: 
+  workflow_dispatch:
     inputs:
       batch_id:
         description: "Batch ID (e.g. 2025-10-30-batch-002)"
@@ -40,7 +40,7 @@ jobs:
           npm install @octokit/rest
 
       # This step writes the JS file at runtime. You do NOT keep it in the repo.
-           - name: Write ingest script
+      - name: Write ingest script
         run: |
           mkdir -p scripts
           cat > scripts/ingest-batch.mjs <<'JS'
@@ -172,5 +172,3 @@ jobs:
           INPUT_BASE_BRANCH: ${{ inputs.base_branch }}
           INPUT_JSON: ${{ inputs.json }}
         run: node scripts/ingest-batch.mjs
-
-
